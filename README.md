@@ -1,2 +1,2 @@
 # gabil-ga
-Implementation of Generic Algorithm (GABIL) for classification
+Implementation of Generit Algorithm (GABIL) for classification
