@@ -9,8 +9,8 @@ import BinarystringSet as BinaryStringSet
 # will be called every step (generation) of the GA evolution
 def evolve_callback(ga_engine):
    generation = ga_engine.getCurrentGeneration()
-   #print "Current generation: %d" % (generation,)
-   #print ga_engine.getStatistics()
+   print "Current generation: %d" % (generation,)
+   print ga_engine.getStatistics()
    return False
 
 def run_main():
@@ -43,7 +43,7 @@ def run_main():
    ga.evolve()
 
    # Best individual
-   print 'best individual:',ga.bestIndividual()
+   print 'Best individual:',ga.bestIndividual()
 
 if __name__ == "__main__":
    run_main()

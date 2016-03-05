@@ -6,8 +6,6 @@ from pyevolve import Util
 from random import randint as rand_randint, choice as rand_choice
 import itertools
 
-def dum(a,**args):
-	pass
 
 class GD1BinaryStringSet(GenomeBase):
 	def __init__(self,rule_length):
