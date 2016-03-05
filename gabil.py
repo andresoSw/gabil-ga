@@ -3,6 +3,13 @@ class AttributeBitString:
 	def __init__(self,attributes):
 		self.attributes = attributes
 		self.binaryStream = {}
+		self.dontCareKey = 'dontCareKey'
+		self.nullKey = 'nullKey'
+
+	def getStreamForAttribute(attributeKey):
+		if attributeKey in self.binaryStream:
+			return self.binaryStream[attributeKey]
+		return None
 
 	def getStream(self):
 		return self.binaryStream
@@ -13,6 +20,11 @@ class AttributeBitString:
 	def computeBinaryStream(self):
 		number_of_attributes = len(self.attributes)
 		default_binary_stream = '0'*number_of_attributes
+		dont_care = '1'*number_of_attributes
+		#adding null bitstring and dont care
+		self.binaryStream[self.nullKey] = default_binary_stream
+		self.binaryStream[self.dontCareKey] = dont_care
+		#adding attributes bitstring
 		for index,attribute in enumerate(reversed(self.attributes)):
 			default_stream = list(default_binary_stream)
 			#turning on the bit corresponding to the attribute
