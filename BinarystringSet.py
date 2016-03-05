@@ -187,7 +187,7 @@ def G1DBinaryStringSetXTwoPoint(genome, **args):
    gMom = args["mom"]
    gDad = args["dad"]
 
-   # the mother will always have the smaller bitstring
+   # the mother will always have the smallest bitstring
    if len(args["mom"]) > len(args["dad"]): 
    		gMom = args["dad"] #change roles
    		gDad = args["mom"] 
@@ -346,3 +346,4 @@ if __name__ == '__main__':
 	exmplesgh2 = ['01110','10011']
 	genomeh2.setExamplesRef(exmplesgh2)
 	print 'fitness for genomeh2: ' , rule_eval(genomeh2)
+	
