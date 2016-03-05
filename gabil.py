@@ -1,12 +1,18 @@
 class AttributeBitString:
 
-	def __init__(self,attributes):
+	def __init__(self,attributes,dontCareKey='dontCareKey',nullKey='nullKey'):
 		self.attributes = attributes
 		self.binaryStream = {}
-		self.dontCareKey = 'dontCareKey'
-		self.nullKey = 'nullKey'
+		self.dontCareKey = dontCareKey
+		self.nullKey = nullKey
 
-	def getStreamForAttribute(attributeKey):
+	def getDontCare(self):
+		return self.binaryStream[self.dontCareKey]
+
+	def getNullMatch(self):
+		return self.binaryStream[self.nullKey]
+
+	def getStreamForAttribute(self,attributeKey):
 		if attributeKey in self.binaryStream:
 			return self.binaryStream[attributeKey]
 		return None
