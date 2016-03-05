@@ -3,8 +3,11 @@ from pyevolve.G1DBinaryString import G1DBinaryString
 from pyevolve import Mutators
 from pyevolve import Consts
 from pyevolve import Util
-from random import randint as rand_randint
+from random import randint as rand_randint, choice as rand_choice
 import itertools
+
+def dum(a,**args):
+	pass
 
 class GD1BinaryStringSet(GenomeBase):
 	def __init__(self,rule_length):
@@ -99,7 +102,7 @@ class GD1BinaryStringSet(GenomeBase):
 		return "".join(map(str, self.ruleSet))
 
 	def G1DBinaryStringSetMutatorFlip(self,mutationRatio):
-		Mutators.G1DBinaryStringMutatorFlip(self.ruleSet,pmut=mutationRatio)
+		return Mutators.G1DBinaryStringMutatorFlip(self.ruleSet,pmut=mutationRatio)
 
 	"""
 		@param rule can be either a bitString in string format or a G1DBinaryString
@@ -161,17 +164,18 @@ class GD1BinaryStringSet(GenomeBase):
 def GD1BinaryStringSetInitializator(genome,**args):
    """ 1D Binary String initializator """
    initial_ruleset_len = 2 #number of rules by default
-   for i in initial_ruleset_len:
+   for i in range(0,initial_ruleset_len):
    		#create random rule of fixed length
-   		rule = [ rand_choice((0,1)) for i in xrange(genome.rule_length) ]
+   		rule = [ rand_choice((0,1)) for j in xrange(genome.rule_length) ]
    		rule = ''.join(map(str,rule))
-   		self.addRuleAsString(rule)
+   		genome.addRuleAsString(rule)
 
 """
 	Mutator method, wrapper for G1DBinaryStringMutatorFlip method
 """
 def WG1DBinaryStringSetMutatorFlip(genome,**args):
-	genome.G1DBinaryStringSetMutatorFlip(mutationRatio=args['pmut'])
+	return genome.G1DBinaryStringSetMutatorFlip(mutationRatio=args['pmut'])
+
 
 """
 	Crossover method, adaptation of pyevolve G1DBinaryStringXTwoPoint function
@@ -181,8 +185,14 @@ def G1DBinaryStringSetXTwoPoint(genome, **args):
 
    sister = None
    brother = None
+
    gMom = args["mom"]
    gDad = args["dad"]
+
+   # the mother will always have the smaller bitstring
+   if len(args["mom"]) > len(args["dad"]): 
+   		gMom = args["dad"] #change roles
+   		gDad = args["mom"] 
    
    if len(gMom) == 1:
       Util.raiseException("The Binary String have one element, can't use the Two Point Crossover method !", TypeError)

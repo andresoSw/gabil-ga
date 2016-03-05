@@ -3,44 +3,47 @@ from pyevolve import GSimpleGA
 from pyevolve import Selectors
 from pyevolve import Mutators
 import pyevolve as pyevolve
+import BinarystringSet as BinaryStringSet
 
-# This function is the evaluation function, we want
-# to give high score to more zero'ed chromosomes
-def eval_func(chromosome):
-   score = 0.0
-
-   # iterate over the chromosome
-   for value in chromosome:
-      if value == 0:
-         score += 0.1
-      
-   return score
+# The step callback function, this function
+# will be called every step (generation) of the GA evolution
+def evolve_callback(ga_engine):
+   generation = ga_engine.getCurrentGeneration()
+   #print "Current generation: %d" % (generation,)
+   #print ga_engine.getStatistics()
+   return False
 
 def run_main():
-   print pyevolve.__file__
+   examples = ['01110','10011']
+   rule_length = 5
 
    # Genome instance
-   genome = G1DBinaryString.G1DBinaryString()
+   genome = BinaryStringSet.GD1BinaryStringSet(rule_length)
+   genome.setExamplesRef(examples)
 
-   # The evaluator function (objective function)
-   genome.evaluator.set(eval_func)
-   genome.mutator.set(Mutators.G1DBinaryStringMutatorFlip)
-
+   # The evaluator function (fitness function)
+   genome.evaluator.set(BinaryStringSet.rule_eval)
+   genome.initializator.set(BinaryStringSet.GD1BinaryStringSetInitializator)
+   genome.mutator.set(BinaryStringSet.WG1DBinaryStringSetMutatorFlip)
+   genome.crossover.set(BinaryStringSet.G1DBinaryStringSetXTwoPoint)
    # Genetic Algorithm Instance
    ga = GSimpleGA.GSimpleGA(genome)
-   
+
    # Set the Roulette Wheel selector method, the number of generations and
    # the termination criteria
    ga.selector.set(Selectors.GRouletteWheel)
+   ga.setCrossoverRate(1.0)
    ga.setGenerations(70)
+   ga.setMutationRate(0.01)
 
-   # Do the evolution, with stats dump
-   # frequency of 10 generations
-   ga.evolve(freq_stats=20)
+   # to be executed at each generation
+   ga.stepCallback.set(evolve_callback)
+
+    # Do the evolution
+   ga.evolve()
 
    # Best individual
-   print ga.bestIndividual()
+   print 'best individual:',ga.bestIndividual()
 
 if __name__ == "__main__":
    run_main()
-   
