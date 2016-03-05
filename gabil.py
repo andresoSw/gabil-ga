@@ -1,4 +1,4 @@
-class AttributeBinaryStream:
+class AttributeBitString:
 
 	def __init__(self,attributes):
 		self.attributes = attributes
@@ -25,6 +25,6 @@ class AttributeBinaryStream:
 if __name__ == '__main__':
 
 	test_attributes = ['a','b','c','d']
-	binaryStream = AttributeBinaryStream(test_attributes)
+	binaryStream = AttributeBitString(test_attributes)
 	binaryStream.computeBinaryStream()
 	binaryStream.printBinaryStream()
