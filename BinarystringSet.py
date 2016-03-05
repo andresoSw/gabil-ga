@@ -7,13 +7,14 @@ from random import randint as rand_randint
 import itertools
 
 class GD1BinaryStringSet(GenomeBase):
-	def __init__(self):
+	def __init__(self,rule_length):
 		GenomeBase.__init__(self)
 		self.ruleSet = G1DBinaryString(0)
 		self.rulePartition = []
 		self.ruleSetSize = 0
+		self.rule_length = rule_length
 		self.examples = []
-		self.initializator.set(Consts.CDefG1DBinaryStringInit)
+		self.initializator.set(GD1BinaryStringSetInitializator)
 		self.mutator.set(WG1DBinaryStringSetMutatorFlip)
 		self.crossover.set(G1DBinaryStringSetXTwoPoint)
 
@@ -53,10 +54,7 @@ class GD1BinaryStringSet(GenomeBase):
 
 	def recomputePartitions(self):
 		lower,upper = self.rulePartition[0] #are rules are the same length, one can pick any rule
-		rule_len = upper-lower
-		if ((self.ruleSetSize % rule_len)!= 0) :
-			Util.raiseException("rule set size must be module of rule size %s" %(rule_len), ValueError)
-		self.rulePartition  = [(lower,lower+rule_len) for lower in range(0,self.ruleSetSize,rule_len) ]
+		self.rulePartition  = [(lower,lower+self.rule_length) for lower in range(0,self.ruleSetSize,self.rule_length) ]
 
 	def substitute(self,leftCut,rightCut,subRule):
 		if ((rightCut < 0) or (leftCut < 0)) :
@@ -72,20 +70,23 @@ class GD1BinaryStringSet(GenomeBase):
 	def addRule(self,rule):
 		if not isinstance(rule,G1DBinaryString):
 			Util.raiseException("The rule must of type G1DBinaryString", ValueError)
-		rule_len = len(rule)
-		newRuleset = G1DBinaryString(self.ruleSetSize + rule_len)
+		if (len(rule) != self.rule_length):
+			Util.raiseException("Rules within a rule set must have the same length %s"%(self.rule_length), ValueError)
+		newRuleset = G1DBinaryString(self.ruleSetSize + self.rule_length)
 		newSet = []
 		newSet.extend(self.ruleSet)
 		newSet.extend(rule)
 		for bit in newSet:
 			newRuleset.append(bit)
 		self.ruleSet = newRuleset
-		self.rulePartition.append((self.ruleSetSize,self.ruleSetSize+rule_len))
+		self.rulePartition.append((self.ruleSetSize,self.ruleSetSize+self.rule_length))
 		self.ruleSetSize = len(self.ruleSet)
 
 	def addRuleAsString(self,ruleStr):
 		if not isinstance(ruleStr,str):
 			Util.raiseException("The rule must of type str", ValueError)
+		if (len(ruleStr) != self.rule_length):
+			Util.raiseException("Rules within a rule set must have the same length %s"%(self.rule_length), ValueError)
 		rule = G1DBinaryString(len(ruleStr))
 		for bit in ruleStr:
 			rule.append(int(bit))
@@ -145,13 +146,26 @@ class GD1BinaryStringSet(GenomeBase):
 		g.ruleSet = self.ruleSet[:] #deep copy
 		g.rulePartition = self.rulePartition[:] #deep copy
 		g.ruleSetSize = self.ruleSetSize
+		g.rule_length = self.rule_length
 		g.examples = self.examples # only a ref to the examples is copied
 
 	def clone(self):
 		""" Return a new instace copy of the genome """
-		newcopy = GD1BinaryStringSet()
+		newcopy = GD1BinaryStringSet(self.rule_length)
 		self.copy(newcopy)
 		return newcopy
+
+"""
+	Initializator method, adapted from pyevolve Initializators.G1DBinaryStringInitializator method
+"""
+def GD1BinaryStringSetInitializator(genome,**args):
+   """ 1D Binary String initializator """
+   initial_ruleset_len = 2 #number of rules by default
+   for i in initial_ruleset_len:
+   		#create random rule of fixed length
+   		rule = [ rand_choice((0,1)) for i in xrange(genome.rule_length) ]
+   		rule = ''.join(map(str,rule))
+   		self.addRuleAsString(rule)
 
 """
 	Mutator method, wrapper for G1DBinaryStringMutatorFlip method
@@ -228,7 +242,7 @@ if __name__ == '__main__':
 	rule_length = 5 #bits
 
 	#h1
-	genomeh1 = GD1BinaryStringSet()
+	genomeh1 = GD1BinaryStringSet(rule_length)
 
 	#rule1
 	rule1 = G1DBinaryString(rule_length)
@@ -251,7 +265,7 @@ if __name__ == '__main__':
 	print 'genome h1:',genomeh1
 
 	#h2
-	genomeh2 = GD1BinaryStringSet()
+	genomeh2 = GD1BinaryStringSet(rule_length)
 
 	#rule1
 	rule1 = G1DBinaryString(rule_length)
@@ -290,7 +304,7 @@ if __name__ == '__main__':
 	print sister
 
 	#testgnome h2
-	genomeh2test = GD1BinaryStringSet()
+	genomeh2test = GD1BinaryStringSet(rule_length)
 	genomeh2test.addRuleAsString('01110')
 	genomeh2test.addRuleAsString('10010')
 	print 'are genomeh2 y genomeh2test string equals? ',genomeh2.ruleSet.getBinary()==genomeh2test.ruleSet.getBinary()
