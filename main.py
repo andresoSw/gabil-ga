@@ -14,8 +14,9 @@ import time
 # will be called every step (generation) of the GA evolution
 def evolve_callback(ga_engine):
    generation = ga_engine.getCurrentGeneration()
-   #print "Current generation: %d" % (generation,)
-   #print ga_engine.getPopulation().internalPop
+   print "=======================Current generation: %d" % (generation,)
+   for index,individual in enumerate(ga_engine.getPopulation().internalPop):
+   		print "ind. #%s : %s" %(index,individual.getBinary())
    return False
 
 def population_init(genome,**args):
