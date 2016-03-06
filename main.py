@@ -8,13 +8,16 @@ from pyevolve import Mutators
 import pyevolve as pyevolve
 import BinarystringSet as BinaryStringSet
 from random import randint as rand_randint
+import time 
 
 # The step callback function, this function
 # will be called every step (generation) of the GA evolution
 def evolve_callback(ga_engine):
    generation = ga_engine.getCurrentGeneration()
    print "Current generation: %d" % (generation,)
-   print ga_engine.getStatistics()
+   time.sleep(1)
+   print ga_engine.getPopulation().internalPop
+   time.sleep(3)
    return False
 
 def population_init(genome,**args):
@@ -22,6 +25,7 @@ def population_init(genome,**args):
 	genome.addRuleAsString(genomeExamples[rand_randint(0,len(genomeExamples)-1)])
 
 def trainDatasetsInDir(dataset_directory):
+	print pyevolve.__file__
 
 	"""
 		Initializing attributes bitstrings
