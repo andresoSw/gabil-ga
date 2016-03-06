@@ -35,6 +35,7 @@ def run_main():
    ga.setCrossoverRate(1.0)
    ga.setGenerations(70)
    ga.setMutationRate(0.01)
+   ga.setPopulationSize(10)
 
    # to be executed at each generation
    ga.stepCallback.set(evolve_callback)

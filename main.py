@@ -1,7 +1,25 @@
 from os import listdir
 from os.path import isfile,join
 from gabil import  AttributeBitString,ContinuousAttributeBitString
+from pyevolve import G1DBinaryString
+from pyevolve import GSimpleGA
+from pyevolve import Selectors
+from pyevolve import Mutators
+import pyevolve as pyevolve
+import BinarystringSet as BinaryStringSet
+from random import randint as rand_randint
 
+# The step callback function, this function
+# will be called every step (generation) of the GA evolution
+def evolve_callback(ga_engine):
+   generation = ga_engine.getCurrentGeneration()
+   print "Current generation: %d" % (generation,)
+   print ga_engine.getStatistics()
+   return False
+
+def population_init(genome,**args):
+	genomeExamples = genome.getExamplesRef()
+	genome.addRuleAsString(genomeExamples[rand_randint(0,len(genomeExamples)-1)])
 
 def trainDatasetsInDir(dataset_directory):
 
@@ -50,7 +68,8 @@ def trainDatasetsInDir(dataset_directory):
 
 		with open(data_file,'r+') as dataset:
 			data = dataset.readlines()
-			for linenum,entry in enumerate(data):
+			examples = []
+			for entry in data:
 				rule = ""
 				entry = entry[:-1] #remove last <whitespace> from each line 
 				entries = entry.split(',')
@@ -69,8 +88,41 @@ def trainDatasetsInDir(dataset_directory):
 						attributeValue = float(attributeValue)
 					attributeAsBitString = binaryStreams[index].getStreamForAttribute(attributeValue)
 					rule += attributeAsBitString
-				print "%s:%s" %(linenum,rule)
+				examples.append(rule)
 
+			"""
+				Evolutionary Algorithm using pyevolve
+			"""
+			rule_length = len(examples[0])
+
+			# Genome instance
+			genome = BinaryStringSet.GD1BinaryStringSet(rule_length)
+			genome.setExamplesRef(examples)
+
+			# The evaluator function (fitness function)
+			genome.evaluator.set(BinaryStringSet.rule_eval)
+			genome.initializator.set(population_init)
+			genome.mutator.set(BinaryStringSet.WG1DBinaryStringSetMutatorFlip)
+			genome.crossover.set(BinaryStringSet.G1DBinaryStringSetXTwoPoint)
+			# Genetic Algorithm Instance
+			ga = GSimpleGA.GSimpleGA(genome)
+
+			# Set the Roulette Wheel selector method, the number of generations and
+			# the termination criteria
+			ga.selector.set(Selectors.GRouletteWheel)
+			ga.setCrossoverRate(1.0)
+			ga.setGenerations(70)
+			ga.setMutationRate(0.01)
+			ga.setPopulationSize(10)
+
+			# to be executed at each generation
+			ga.stepCallback.set(evolve_callback)
+
+			# Do the evolution
+			ga.evolve()
+
+			# Best individual
+			print 'Best individual:',ga.bestIndividual()
 
 if __name__ == '__main__':
 	datasets_dir = 'datasets'
