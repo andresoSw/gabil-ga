@@ -234,7 +234,6 @@ def G1DBinaryStringSetXTwoPoint(genome, **args):
    # Computing the distance from the cuts to the nearest rule to the left
    cutsMomDistance = [gMom.distanceFromCutToClosestRuleByLeft(cutsMom[0]),
    						gMom.distanceFromCutToClosestRuleByLeft(cutsMom[1])]
-
    # Computing factible crossover points for the dad parent
    factibleDadCuts = gDad.getCutPointsFromDistances(cutsMomDistance[0],cutsMomDistance[1])
    #picking one random cut pair for the parent from the factible cuts
@@ -428,3 +427,20 @@ if __name__ == '__main__':
 	exmplesgh3 = ['10101','10011','01010']
 	genomeh3test.setExamplesRef(exmplesgh3)
 	print 'fitness for genomeh3: ' , rule_eval(genomeh2)#rule_eval2(genomeh3test)
+
+	"""
+		Testing crossover with real examples
+	""" 
+	print '\n\n=======================REAL EXAMPLE CROSSOVERS'
+	rule1 = '0101000001000100100000100000000000000000110001010000010100101000010' #rule 0 
+	genome67bitA = GD1BinaryStringSet(len(rule1))
+	genome67bitA.addRuleAsString(rule1)
+
+	rule2 = '1000100001000010010000000000000100000000100100101000100100110000011' #rule 7
+	genome67bitB = GD1BinaryStringSet(len(rule2))
+	genome67bitB.addRuleAsString(rule2)
+	sister,brother = G1DBinaryStringSetXTwoPoint(None,mom=genome67bitA,dad=genome67bitB,count=2)
+	print 'mother:',genome67bitA.getBinary()
+	print 'father:',genome67bitB.getBinary()
+	print 'sister:',sister.getBinary()
+	print 'brother:',brother.getBinary()
