@@ -43,6 +43,12 @@ class GD1BinaryStringSet(GenomeBase):
 			if upper > cut: 
 				return cut - lower
 
+	"""
+		@param leftDistance the distance from the left crossover Cut to the neares rule by the left
+		@param rightDistance the distance from the right crossover Cut to the nearest rule by the left
+		 can be either a bitString in string format or a G1DBinaryString
+		@return a list of pairs of cut points that satisfies the left and right Distance contraints
+	"""
 	def getCutPointsFromDistances(self,leftDistance,rightDistance):
 		if ((leftDistance < 0) or (rightDistance < 0)) :
 			Util.raiseException("leftDistance and rightDistance must be positive", ValueError)
@@ -53,10 +59,21 @@ class GD1BinaryStringSet(GenomeBase):
 		cross_product = itertools.product(rightCutCandidates,leftCutCandidates)
 		return [(lower,upper) for (lower,upper) in list(cross_product) if lower<=upper]
 
+	"""
+		Computes the partitions - start and end points of each rule - given the fixed size
+		of the rule and the whole bitstring
+	"""
 	def recomputePartitions(self):
 		lower,upper = self.rulePartition[0] #are rules are the same length, one can pick any rule
 		self.rulePartition  = [(lower,lower+self.rule_length) for lower in range(0,self.ruleSetSize,self.rule_length) ]
 
+	"""
+		@param leftCut the leftmost cut point
+		@param rightCut the rightmost cut point
+		@param subRule the rule to be injected in the bitstring
+		
+		The genome content contained within the range (leftCut,rightCut) is replaced with the given subRule
+	"""
 	def substitute(self,leftCut,rightCut,subRule):
 		if ((rightCut < 0) or (leftCut < 0)) :
 			Util.raiseException("Crossover cut points must be positive", ValueError)
@@ -68,6 +85,10 @@ class GD1BinaryStringSet(GenomeBase):
 		self.ruleSetSize = len(self.ruleSet)
 		self.recomputePartitions()
 	
+	"""
+		@param rule a G1DBinaryString defining the rule to be added to the rule set
+		Adds the given rule to the rule set
+	"""
 	def addRule(self,rule):
 		if not isinstance(rule,G1DBinaryString):
 			Util.raiseException("The rule must of type G1DBinaryString", ValueError)
@@ -83,6 +104,10 @@ class GD1BinaryStringSet(GenomeBase):
 		self.rulePartition.append((self.ruleSetSize,self.ruleSetSize+self.rule_length))
 		self.ruleSetSize = len(self.ruleSet)
 
+	"""
+		@param rule a string defining the rule to be added to the rule set
+		Adds the given rule to the rule set
+	"""
 	def addRuleAsString(self,ruleStr):
 		if not isinstance(ruleStr,str):
 			Util.raiseException("The rule must of type str", ValueError)
@@ -93,9 +118,15 @@ class GD1BinaryStringSet(GenomeBase):
 			rule.append(int(bit))
 		self.addRule(rule)
 
+	"""
+		@return the decimal representation of the bitstring
+	"""
 	def getDecimal(self):
 		return int(self.getBinary(), 2)
 
+	"""
+		@return the bitstring as a string of 0's and 1's
+	"""
 	def getBinary(self):
 		return "".join(map(str, self.ruleSet))
 
@@ -346,4 +377,3 @@ if __name__ == '__main__':
 	exmplesgh2 = ['01110','10011']
 	genomeh2.setExamplesRef(exmplesgh2)
 	print 'fitness for genomeh2: ' , rule_eval(genomeh2)
-	

@@ -40,9 +40,30 @@ class AttributeBitString:
 	def printBinaryStream(self):
 		print 'BinaryStream: for attributes: %s\nStream: %s' %(self.attributes,self.binaryStream) 
 
+class ContinuousAttributeBitString(AttributeBitString):
+	def __init__(self,attributes,dontCareKey='dontCareKey',nullKey='nullKey'):
+		AttributeBitString.__init__(self,attributes=attributes,dontCareKey=dontCareKey,nullKey=nullKey)
+
+	def getStreamForAttribute(self,attributeKey):
+		for lowerBound,upperBound in self.attributes:
+			if ((lowerBound <= attributeKey) and (attributeKey < upperBound)):
+				return self.binaryStream[(lowerBound,upperBound)]
+
+
 if __name__ == '__main__':
 
+	# Discrete attributes test
 	test_attributes = ['a','b','c','d']
 	binaryStream = AttributeBitString(test_attributes)
 	binaryStream.computeBinaryStream()
 	binaryStream.printBinaryStream()
+	a_stream = binaryStream.getStreamForAttribute('a')
+	print '\n<a> stream:',a_stream,'\n\n'
+
+	# Continuous attributes test
+	test_attributes = [(10.00,20.00),(20.00,25.00),(25.00,30.00),(30.00,40.00),(40.00,85.00)]
+	binaryStream = ContinuousAttributeBitString(test_attributes)
+	binaryStream.computeBinaryStream()
+	binaryStream.printBinaryStream()
+	c_stream = binaryStream.getStreamForAttribute(27.83)
+	print '\n<27.83> stream:',c_stream
