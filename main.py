@@ -27,6 +27,8 @@ def trainDatasetsInDir(dataset_directory):
 	A12BinaryStream = AttributeBitString(['t','f'])
 	A13BinaryStream = AttributeBitString(['g','p','s'])
 	ClassificationBinaryStream = AttributeBitString(['+','-'])
+	ClassificationBinaryStream.getStream()['+'] = '1'
+	ClassificationBinaryStream.getStream()['-'] = '0'
 
 	#must be ordered
 	binaryStreams = [A1BinaryStream,A2BinaryStream,A3BinaryStream,A4BinaryStream,A5BinaryStream,A6BinaryStream,
