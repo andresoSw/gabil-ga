@@ -277,11 +277,12 @@ def rule_eval(genome):
 
 def rule_eval2(genome):
 	examples = genome.getExamplesRef()
-	attribute_bits = [2,2]
+	attribute_bits = [2, 5, 4, 4, 3, 14, 9, 4, 2, 2, 5, 2, 3, 3, 4]
 	if not isinstance(genome,GD1BinaryStringSet):
 			Util.raiseException("The rule must of type G1DBinaryString", ValueError)
 	
-	assert (sum(attribute_bits) == genome.rule_length -1 ), 'example is not consistent with its attributes'
+	if (sum(attribute_bits) != genome.rule_length -1 ):
+		Util.raiseException("Example is not consistent with its attributes", ValueError)
 
 	rule_binary = genome.getBinary()
 	rule_length = genome.rule_length
@@ -426,4 +427,4 @@ if __name__ == '__main__':
 	"""
 	exmplesgh3 = ['10101','10011','01010']
 	genomeh3test.setExamplesRef(exmplesgh3)
-	print 'fitness for genomeh3: ' , rule_eval2(genomeh3test)
+	print 'fitness for genomeh3: ' , rule_eval(genomeh2)#rule_eval2(genomeh3test)

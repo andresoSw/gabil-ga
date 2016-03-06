@@ -14,10 +14,8 @@ import time
 # will be called every step (generation) of the GA evolution
 def evolve_callback(ga_engine):
    generation = ga_engine.getCurrentGeneration()
-   print "Current generation: %d" % (generation,)
-   time.sleep(1)
-   print ga_engine.getPopulation().internalPop
-   time.sleep(3)
+   #print "Current generation: %d" % (generation,)
+   #print ga_engine.getPopulation().internalPop
    return False
 
 def population_init(genome,**args):
@@ -25,7 +23,6 @@ def population_init(genome,**args):
 	genome.addRuleAsString(genomeExamples[rand_randint(0,len(genomeExamples)-1)])
 
 def trainDatasetsInDir(dataset_directory):
-	print pyevolve.__file__
 
 	"""
 		Initializing attributes bitstrings
@@ -104,7 +101,7 @@ def trainDatasetsInDir(dataset_directory):
 			genome.setExamplesRef(examples)
 
 			# The evaluator function (fitness function)
-			genome.evaluator.set(BinaryStringSet.rule_eval)
+			genome.evaluator.set(BinaryStringSet.rule_eval2)
 			genome.initializator.set(population_init)
 			genome.mutator.set(BinaryStringSet.WG1DBinaryStringSetMutatorFlip)
 			genome.crossover.set(BinaryStringSet.G1DBinaryStringSetXTwoPoint)
