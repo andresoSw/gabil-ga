@@ -274,6 +274,42 @@ def rule_eval(genome):
 	score = (corrects/len(examples))**2
 	return score
 
+
+def rule_eval2(genome):
+	examples = genome.getExamplesRef()
+	attribute_bits = [2,2]
+	if not isinstance(genome,GD1BinaryStringSet):
+			Util.raiseException("The rule must of type G1DBinaryString", ValueError)
+	
+	assert (sum(attribute_bits) == genome.rule_length -1 ), 'example is not consistent with its attributes'
+
+	rule_binary = genome.getBinary()
+	rule_length = genome.rule_length
+	rule_list = [rule_binary[i:i+rule_length] for i in xrange(0,len(rule_binary),rule_length)]
+
+	corrects = 0.0
+	for example in examples:
+		corrects += match_example(example,rule_list, attribute_bits)
+
+	#the final score is the classification accuracy to the power of 2
+	score = (corrects/len(examples))**2
+	return score
+
+
+def match_example(example, rules, bits):
+	for r in rules:
+		init = 0
+		for i,b in enumerate(bits):
+			att_e = int(example[init:init+b],2)
+			att_r = int(r[init:init+b],2)
+			if  (att_e & att_r) == 0:
+				break
+			init += b
+		if r[-1] == example[-1]:
+			return 1
+	return 0
+
+
 if __name__ == '__main__':
 	"""
 		Testing creation of rules and rule sets
@@ -377,3 +413,17 @@ if __name__ == '__main__':
 	exmplesgh2 = ['01110','10011']
 	genomeh2.setExamplesRef(exmplesgh2)
 	print 'fitness for genomeh2: ' , rule_eval(genomeh2)
+
+
+	genomeh3test = GD1BinaryStringSet(5)
+	genomeh3test.addRuleAsString('10111')
+	genomeh3test.addRuleAsString('01010')
+	genomeh3test.addRuleAsString('01101')
+
+
+	"""
+		Expected fitness 1
+	"""
+	exmplesgh3 = ['10101','10011','01010']
+	genomeh3test.setExamplesRef(exmplesgh3)
+	print 'fitness for genomeh3: ' , rule_eval2(genomeh3test)
