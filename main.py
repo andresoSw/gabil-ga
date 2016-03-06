@@ -15,13 +15,19 @@ import time
 def evolve_callback(ga_engine):
    generation = ga_engine.getCurrentGeneration()
    print "=======================Current generation: %d" % (generation,)
-   for index,individual in enumerate(ga_engine.getPopulation().internalPop):
-   		print "ind. #%s : %s" %(index,individual.getBinary())
+   print 'Best Individual:%s' %(ga_engine.bestIndividual().getBinary())
+   print 'fitness: %s' %(ga_engine.bestIndividual().fitness)
+   """for index,individual in enumerate(ga_engine.getPopulation().internalPop):
+   		print "ind. #%s : %s" %(index,individual.getBinary())"""
    return False
 
 def population_init(genome,**args):
+	MAX_NUMBER_OF_RULES = 5 # genome will have 1 <= i <= MAX rules within the rule set
 	genomeExamples = genome.getExamplesRef()
-	genome.addRuleAsString(genomeExamples[rand_randint(0,len(genomeExamples)-1)])
+
+	number_of_rules_to_add = rand_randint(1,MAX_NUMBER_OF_RULES)
+	for i in range(0,number_of_rules_to_add):
+		genome.addRuleAsString(genomeExamples[rand_randint(0,len(genomeExamples)-1)])
 
 def trainDatasetsInDir(dataset_directory):
 
