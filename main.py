@@ -47,8 +47,8 @@ def trainDatasetsInDir(dataset_directory):
 
 		with open(data_file,'r+') as dataset:
 			data = dataset.readlines()
-			rule = ""
 			for linenum,entry in enumerate(data):
+				rule = ""
 				entry = entry[:-1] #remove last <whitespace> from each line 
 				entries = entry.split(',')
 				assert(len(entries)==len(binaryStreams))
