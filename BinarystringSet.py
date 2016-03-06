@@ -32,7 +32,7 @@ class GD1BinaryStringSet(GenomeBase):
 		return self.examples
 
 	"""
-		@return the distance from the left crossover cut to the start 
+		@return the distance from the given crossover cut point to the start 
 		of the closest rule by the left 
 	"""
 	def distanceFromCutToClosestRuleByLeft(self,cut):
