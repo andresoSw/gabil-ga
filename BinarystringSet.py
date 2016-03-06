@@ -287,25 +287,30 @@ def rule_eval2(genome):
 	rule_length = genome.rule_length
 	rule_list = [rule_binary[i:i+rule_length] for i in xrange(0,len(rule_binary),rule_length)]
 
+
 	corrects = 0.0
 	for example in examples:
 		corrects += match_example(example,rule_list, attribute_bits)
 
 	#the final score is the classification accuracy to the power of 2
-	score = (corrects/len(examples))**2
-	return score
+	score = (float(corrects)/float(len(examples)))**2
+	new_score = score*(0.99**(len(rule_list) -1))
+	print 'correct: %.2f | total: %.2f | size: %.2f | score: %.2f/%.2f' % (corrects, len(examples), len(rule_list), score, new_score)
+	return new_score
 
 
 def match_example(example, rules, bits):
 	for r in rules:
 		init = 0
+		matched = True
 		for i,b in enumerate(bits):
 			att_e = int(example[init:init+b],2)
 			att_r = int(r[init:init+b],2)
 			if  (att_e & att_r) == 0:
+				matched = False
 				break
 			init += b
-		if r[-1] == example[-1]:
+		if (r[-1] == example[-1]) and matched:
 			return 1
 	return 0
 

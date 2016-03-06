@@ -118,10 +118,10 @@ def trainDatasetsInDir(dataset_directory):
 			# Set the Roulette Wheel selector method, the number of generations and
 			# the termination criteria
 			ga.selector.set(Selectors.GRouletteWheel)
-			ga.setCrossoverRate(1.0)
-			ga.setGenerations(70)
+			ga.setCrossoverRate(0.6)
+			ga.setGenerations(1000)
 			ga.setMutationRate(0.01)
-			ga.setPopulationSize(10)
+			ga.setPopulationSize(20)
 
 			# to be executed at each generation
 			ga.stepCallback.set(evolve_callback)
