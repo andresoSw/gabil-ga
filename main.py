@@ -10,15 +10,34 @@ import BinarystringSet as BinaryStringSet
 from random import randint as rand_randint
 import time 
 
+def accuracy(genome):
+	examples = genome.getExamplesRef()
+	attribute_bits = [2, 5, 4, 4, 3, 14, 9, 4, 2, 2, 5, 2, 3, 3, 4]
+	if not isinstance(genome, BinaryStringSet.GD1BinaryStringSet):
+			Util.raiseException("The rule must of type G1DBinaryString", ValueError)
+	
+	if (sum(attribute_bits) != genome.rule_length -1 ):
+		Util.raiseException("Example is not consistent with its attributes", ValueError)
+
+	rule_binary = genome.getBinary()
+	rule_length = genome.rule_length
+	rule_list = [rule_binary[i:i+rule_length] for i in xrange(0,len(rule_binary),rule_length)]
+
+
+	corrects = 0.0
+	for example in examples:
+		corrects +=  BinaryStringSet.match_example(example,rule_list, attribute_bits)
+
+	#the final score is the classification accuracy to the power of 2
+	return corrects/len(examples)
+
 # The step callback function, this function
 # will be called every step (generation) of the GA evolution
 def evolve_callback(ga_engine):
    generation = ga_engine.getCurrentGeneration()
-   print "=======================Current generation: %d" % (generation,)
-   print 'Best Individual:%s' %(ga_engine.bestIndividual().getBinary())
-   print 'fitness: %s' %(ga_engine.bestIndividual().fitness)
-   """for index,individual in enumerate(ga_engine.getPopulation().internalPop):
-   		print "ind. #%s : %s" %(index,individual.getBinary())"""
+   best_individual = ga_engine.bestIndividual()
+   # generacion, bestgenome.numberofrules, fitness, %classification
+   print "%s,%s,%s,%s" %(generation,len(best_individual.rulePartition),best_individual.fitness,accuracy(best_individual))
    return False
 
 def population_init(genome,**args):
