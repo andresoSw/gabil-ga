@@ -8,7 +8,47 @@ from pyevolve import Mutators
 import pyevolve as pyevolve
 import BinarystringSet as BinaryStringSet
 from random import randint as rand_randint
+import sys, getopt
 import time 
+
+def extract_commandline_params(argv):
+   how_to_use_message = '$ Usage: \n\tShort Version: python test.py -c <rate> ' \
+                        '-m <rate> -g <howmany> -p <howmany> -d <datasetfile>\n'\
+                        '\tLong Version : python test.py --crossover <rate>' \
+                        '--mutation <rate> --generations <howmany> --population <howmany> '\
+                        '--dataset <datasetfile>\n'
+
+   mandatory_args = [("-c","--crossover"),("-m","--mutation"),("-g","--generations"),("-p","--population"),("-d","dataset")]
+
+   # checking that all mandatory arguments were provide within the command line
+   for shortArg,longArg in mandatory_args:
+      if ((not shortArg in argv) and (not longArg in argv)):
+         print "\n$ Execution Error: Missing argument \"%s\"" %(longArg)
+         print how_to_use_message
+         sys.exit(2)
+  
+   try:
+      opts, args = getopt.getopt(argv,'c:m:g:p:d:',['crossover=','mutation=','generations=','population=','dataset='])
+   except getopt.GetoptError:
+      print how_to_use_message
+      sys.exit(2)
+
+   parsed_arguments = {}
+
+   for opt, arg in opts:
+      if opt in ("-c","--crossover"):
+         parsed_arguments["crossover"] = float(arg)
+      elif opt in ("-m","--mutation"):
+         parsed_arguments["mutation"] = float(arg)
+      elif opt in ("-g","--generations"):
+         parsed_arguments["generations"] = int(arg)
+      elif opt in ("-p","--population"):
+         parsed_arguments["population"] = int(arg)
+      elif opt in ("-d","--dataset"):
+         parsed_arguments["dataset"] = arg
+
+   return parsed_arguments
+
 
 def accuracy(genome):
 	examples = genome.getExamplesRef()
@@ -48,7 +88,15 @@ def population_init(genome,**args):
 	for i in range(0,number_of_rules_to_add):
 		genome.addRuleAsString(genomeExamples[rand_randint(0,len(genomeExamples)-1)])
 
-def trainDatasetsInDir(dataset_directory):
+def train_gabil(crossoverRate,mutationRate,populationSize,generations,dataset_file):
+	print '----------------------------------------------------------------'
+	print 'Running GABIL with parameters:'
+	print 'crossoverRate:',crossoverRate,
+	print 'mutationRate:',mutationRate,
+	print 'populationSize:',populationSize,
+	print 'generations:',generations,
+	print 'dataset_file',dataset_file, 
+
 
 	"""
 		Initializing attributes bitstrings
@@ -87,70 +135,72 @@ def trainDatasetsInDir(dataset_directory):
 	"""
 		Parsing Dataset
 	"""
-	for index,file_name in enumerate(listdir(dataset_directory)):
-		print "%s)=============================================================" %(index+1)
-		print "Training network from dataset: %s" %(file_name)
-		data_file = join(dataset_directory,file_name)
-		if not isfile(data_file): continue
-
-		with open(data_file,'r+') as dataset:
-			data = dataset.readlines()
-			examples = []
-			for entry in data:
-				rule = ""
-				entry = entry[:-1] #remove last <whitespace> from each line 
-				entries = entry.split(',')
-				assert(len(entries)==len(binaryStreams))
-				""" 
-					Assumes entries are ordered with respect of the attributes
-					Rule is extended with the bitstring representation of every attribute
-				"""
-				for index,attributeValue in enumerate(entries):
-					#unknown attributes are valued as dont care bitstrings
-					if attributeValue == '?':
-						rule += binaryStreams[index].getDontCare()
-						continue
-					#casting to float needed for continuous attributes
-					if isinstance(binaryStreams[index],ContinuousAttributeBitString):
-						attributeValue = float(attributeValue)
-					attributeAsBitString = binaryStreams[index].getStreamForAttribute(attributeValue)
-					rule += attributeAsBitString
-				examples.append(rule)
-
+	with open(dataset_file,'r+') as dataset:
+		data = dataset.readlines()
+		examples = []
+		for entry in data:
+			rule = ""
+			entry = entry[:-1] #remove last <whitespace> from each line 
+			entries = entry.split(',')
+			assert(len(entries)==len(binaryStreams))
+			""" 
+				Assumes entries are ordered with respect of the attributes
+				Rule is extended with the bitstring representation of every attribute
 			"""
-				Evolutionary Algorithm using pyevolve
-			"""
-			rule_length = len(examples[0])
+			for index,attributeValue in enumerate(entries):
+				#unknown attributes are valued as dont care bitstrings
+				if attributeValue == '?':
+					rule += binaryStreams[index].getDontCare()
+					continue
+				#casting to float needed for continuous attributes
+				if isinstance(binaryStreams[index],ContinuousAttributeBitString):
+					attributeValue = float(attributeValue)
+				attributeAsBitString = binaryStreams[index].getStreamForAttribute(attributeValue)
+				rule += attributeAsBitString
+			examples.append(rule)
 
-			# Genome instance
-			genome = BinaryStringSet.GD1BinaryStringSet(rule_length)
-			genome.setExamplesRef(examples)
+		"""
+			Evolutionary Algorithm using pyevolve
+		"""
+		rule_length = len(examples[0])
 
-			# The evaluator function (fitness function)
-			genome.evaluator.set(BinaryStringSet.rule_eval2)
-			genome.initializator.set(population_init)
-			genome.mutator.set(BinaryStringSet.WG1DBinaryStringSetMutatorFlip)
-			genome.crossover.set(BinaryStringSet.G1DBinaryStringSetXTwoPoint)
-			# Genetic Algorithm Instance
-			ga = GSimpleGA.GSimpleGA(genome)
+		# Genome instance
+		genome = BinaryStringSet.GD1BinaryStringSet(rule_length)
+		genome.setExamplesRef(examples)
 
-			# Set the Roulette Wheel selector method, the number of generations and
-			# the termination criteria
-			ga.selector.set(Selectors.GRouletteWheel)
-			ga.setCrossoverRate(0.6)
-			ga.setGenerations(1000)
-			ga.setMutationRate(0.01)
-			ga.setPopulationSize(20)
+		# The evaluator function (fitness function)
+		genome.evaluator.set(BinaryStringSet.rule_eval2)
+		genome.initializator.set(population_init)
+		genome.mutator.set(BinaryStringSet.WG1DBinaryStringSetMutatorFlip)
+		genome.crossover.set(BinaryStringSet.G1DBinaryStringSetXTwoPoint)
+		# Genetic Algorithm Instance
+		ga = GSimpleGA.GSimpleGA(genome)
 
-			# to be executed at each generation
-			ga.stepCallback.set(evolve_callback)
+		# Set the Roulette Wheel selector method, the number of generations and
+		# the termination criteria
+		ga.selector.set(Selectors.GRouletteWheel)
+		ga.setCrossoverRate(crossoverRate)
+		ga.setGenerations(1000)
+		ga.setMutationRate(mutationRate)
+		ga.setPopulationSize(populationSize)
 
-			# Do the evolution
-			ga.evolve()
+		# to be executed at each generation
+		ga.stepCallback.set(evolve_callback)
 
-			# Best individual
-			print 'Best individual:',ga.bestIndividual()
+		# Do the evolution
+		ga.evolve()
+
+		# Best individual
+		print 'Best individual:',ga.bestIndividual()
 
 if __name__ == '__main__':
-	datasets_dir = 'datasets'
-	trainDatasetsInDir(datasets_dir)
+
+	#ignoring the name of the program from the command line args
+	arguments = extract_commandline_params(sys.argv[1:]) 
+	crossoverRate = arguments["crossover"]
+	mutationRate = arguments["mutation"]
+	populationSize = arguments["population"]
+	generations = arguments["generations"]
+	dataset_file = arguments["dataset"]
+	train_gabil(crossoverRate=crossoverRate,mutationRate=mutationRate,
+						populationSize=populationSize,generations=generations,dataset_file=dataset_file)
