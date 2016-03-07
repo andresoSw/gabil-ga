@@ -90,12 +90,13 @@ def population_init(genome,**args):
 
 def train_gabil(crossoverRate,mutationRate,populationSize,generations,dataset_file):
 	print '----------------------------------------------------------------'
-	print 'Running GABIL with parameters:'
-	print 'crossoverRate:',crossoverRate,
-	print 'mutationRate:',mutationRate,
-	print 'populationSize:',populationSize,
-	print 'generations:',generations,
-	print 'dataset_file',dataset_file, 
+	print '***** Running GABIL with parameters:\n'
+	print '* crossoverRate  : %s' %(crossoverRate)
+	print '* mutationRate   : %s' %(mutationRate)
+	print '* populationSize : %s' %(populationSize)
+	print '* generations    : %s' %(generations)
+	print '* dataset_file   : %s' %(dataset_file)
+	print '----------------------------------------------------------------'
 
 
 	"""
