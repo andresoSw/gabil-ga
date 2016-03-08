@@ -36,7 +36,7 @@ Below there is a list of the mandatory and optional arguments to be provided res
 | Results Folder:                          |--rfolder             | path to folder       |  /gabil-runs   |
 
 
-In case that any of the optional argument is not specified, its the default value will be used instead
+In case that any of the optional argument is not specified, its default value will be used instead
 
 ####Example of project invocation:
 
@@ -54,7 +54,7 @@ The following files will be created inside the result folders
 * test_dataset.txt
 * training_dataset.txt
 
-A description of the content of each file is resumed in the following table
+A description of the content of each file is summarized in the following table
 
 |       Filename            |             Content Description                           |        Format          |
 |---------------------------|-----------------------------------------------------------|------------------------|
