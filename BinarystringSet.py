@@ -275,9 +275,11 @@ def rule_eval(genome):
 
 
 def rule_eval2(genome):
-	MAX_ALLOWED_RULES = 50
+
+	MAX_ALLOWED_RULES = genome.getParam("maxrules")
 	#genomes that surpass rule threshold are automatically discarded
 	if len(genome.rulePartition) > MAX_ALLOWED_RULES: return 0 
+
 	examples = genome.getExamplesRef()
 	attribute_bits = [2, 5, 4, 4, 3, 14, 9, 4, 2, 2, 5, 2, 3, 3, 4]
 	if not isinstance(genome,GD1BinaryStringSet):
