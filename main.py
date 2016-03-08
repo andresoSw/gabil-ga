@@ -56,9 +56,9 @@ def separate_dataset(examples):
 	return training_dataset,test_dataset
 
 def extract_commandline_params(argv):
-   how_to_use_message = '$ Usage: \n\tShort Version: python test.py -c <rate> ' \
+   how_to_use_message = '$ Usage: \n\tShort Version: main.py -c <rate> ' \
                         '-m <rate> -g <howmany> -p <howmany> -d <datasetfile>\n'\
-                        '\tLong Version : python test.py --crossover <rate>' \
+                        '\tLong Version : main.py --crossover <rate>' \
                         '--mutation <rate> --generations <howmany> --population <howmany> '\
                         '--dataset <datasetfile>\n'
 
@@ -159,6 +159,11 @@ def train_gabil(crossoverRate,mutationRate,populationSize,generations,dataset_fi
 
 	print '**** Dumping results in directory: \"%s\"' %(results_path)
 	print '----------------------------------------------------------------'
+	input_params_file = os.path.join(results_path,'input_params.txt')
+	input_params = {"crossoverRate":crossoverRate,"mutationRate":mutationRate,"populationSize":populationSize,
+					"generations":generations,"dataset_file":dataset_file}
+	with open(input_params_file, 'w') as outfile:
+			json.dump(input_params, outfile,indent=4)
 
 	"""
 		Initializing attributes bitstrings
@@ -256,7 +261,7 @@ def train_gabil(crossoverRate,mutationRate,populationSize,generations,dataset_fi
 		# the termination criteria
 		ga.selector.set(Selectors.GRouletteWheel)
 		ga.setCrossoverRate(crossoverRate)
-		ga.setGenerations(1000)
+		ga.setGenerations(generations)
 		ga.setMutationRate(mutationRate)
 		ga.setPopulationSize(populationSize)
 
