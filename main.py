@@ -62,7 +62,7 @@ def extract_commandline_params(argv):
                         '--mutation <rate> --generations <howmany> --population <howmany> '\
                         '--dataset <datasetfile>\n\n'\
                         '\t[OPTIONAL ARGS] --decay <ratio> --initrules <howmany> --maxrules <howmany> --rfolder <path>\n\n'\
-                        '$ Please refer to the README.txt for further explanation\n'
+                        '$ Please refer to the README.md for further explanation\n'
 
    mandatory_args = [("-c","--crossover"),("-m","--mutation"),("-g","--generations"),("-p","--population"),("-d","dataset")]
    optional_args = [("--decay"),("--initrules"),("--maxrules"),("--rfolder")]
