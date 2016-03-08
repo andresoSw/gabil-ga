@@ -102,35 +102,30 @@ def extract_commandline_params(argv):
 
    return parsed_arguments
 
-
-def accuracy(genome):
-	examples = genome.getExamplesRef()
-	attribute_bits = [2, 5, 4, 4, 3, 14, 9, 4, 2, 2, 5, 2, 3, 3, 4]
-	if not isinstance(genome, BinaryStringSet.GD1BinaryStringSet):
-			Util.raiseException("The rule must of type G1DBinaryString", ValueError)
-	
-	if (sum(attribute_bits) != genome.rule_length -1 ):
-		Util.raiseException("Example is not consistent with its attributes", ValueError)
-
-	rule_binary = genome.getBinary()
-	rule_length = genome.rule_length
-	rule_list = [rule_binary[i:i+rule_length] for i in xrange(0,len(rule_binary),rule_length)]
-
-
-	corrects = 0.0
-	for example in examples:
-		corrects +=  BinaryStringSet.match_example(example,rule_list, attribute_bits)
-
-	#the final score is the classification accuracy to the power of 2
-	return corrects/len(examples)
-
 # The step callback function, this function
 # will be called every step (generation) of the GA evolution
 def evolve_callback(ga_engine):
+   learning_results_file = ga_engine.getParam("rlearningfile")
    generation = ga_engine.getCurrentGeneration()
    best_individual = ga_engine.bestIndividual()
-   # generacion, bestgenome.numberofrules, fitness, %classification
-  # print "%s,%s,%s,%s" %(generation,len(best_individual.rulePartition),best_individual.getRawScore(),accuracy(best_individual))
+   worst_individual = getWorstIndividual(ga_engine)
+
+   avgRuleSize = getAvgRuleSize(ga_engine)
+   avgRawScore = getAvgRawScore(ga_engine)
+   avgAccuracy = getAvgAccuracy(ga_engine)
+
+   file_tokens = [generation,len(best_individual.rulePartition),best_individual.getRawScore(),
+   				  best_individual.getAccuracy(),1-best_individual.getAccuracy(), # best individual statictics
+   				  len(worst_individual.rulePartition),worst_individual.getRawScore(),
+   				  worst_individual.getAccuracy(),1-worst_individual.getAccuracy(), #worst individual statistics
+   				  avgRuleSize,avgRawScore,avgAccuracy,1-avgAccuracy # avg statistics
+   				  ]
+
+   with open(learning_results_file, 'a') as outfile:
+   		tokens = ','.join(map(str,file_tokens))
+		outfile.write(tokens)
+   		outfile.write('\n')
+
    return False
 
 def population_init(genome,**args):
@@ -141,6 +136,22 @@ def population_init(genome,**args):
 	number_of_rules_to_add = rand_randint(1,MAX_NUMBER_OF_RULES)
 	for i in range(0,number_of_rules_to_add):
 		genome.addRuleAsString(genomeExamples[rand_randint(0,len(genomeExamples)-1)])
+
+def getWorstIndividual(ga_engine):
+	worstIndividual = min(ga_engine.internalPop,key=lambda g: g.getRawScore)
+	return worstIndividual
+
+def getAvgRawScore(ga_engine):
+	avgScore = sum([individual.getRawScore() for individual in ga_engine.internalPop ])/float(len(ga_engine.internalPop))
+	return avgScore
+
+def getAvgRuleSize(ga_engine):
+	avgRuleSize = sum([len(individual.rulePartition) for individual in ga_engine.internalPop ])/float(len(ga_engine.internalPop))
+	return avgRuleSize
+
+def getAvgAccuracy(ga_engine):
+	avgAccuracy = sum([individual.getAccuracy() for individual in ga_engine.internalPop ])/float(len(ga_engine.internalPop))
+	return avgAccuracy
 
 def train_gabil(crossoverRate,mutationRate,populationSize,generations,dataset_file,decay,initrules,maxrules):
 	print '----------------------------------------------------------------'
@@ -285,6 +296,16 @@ def train_gabil(crossoverRate,mutationRate,populationSize,generations,dataset_fi
 		ga.setMutationRate(mutationRate)
 		ga.setPopulationSize(populationSize)
 
+		#file where to register learning progress
+		learning_results_file = os.path.join(results_path,'gabil-learning.txt')
+		ga.setParams(rlearningfile=learning_results_file)
+		file_labels = ["#Generation","BestIndRuleSize","BestIndRawScore","BestIndAccuracy","BestIndError",
+			 "WorstIndRuleSize","WorstIndRawScore","WorstIndAccuracy","WorstIndError",
+			 "AvgRuleSize","AvgRawScore","AvgAccuracy","AvgError"]
+		with open(learning_results_file, 'a') as outfile:
+				labels = ','.join(file_labels)
+				outfile.write(labels)
+				outfile.write('\n')
 		# to be executed at each generation
 		ga.stepCallback.set(evolve_callback)
 
@@ -297,7 +318,8 @@ def train_gabil(crossoverRate,mutationRate,populationSize,generations,dataset_fi
 			respect of the test dataset
 		"""
 		final_best_individual.setExamplesRef(test_dataset)
-		best_accuracy = accuracy(final_best_individual)
+		BinaryStringSet.rule_eval2(final_best_individual) #applying fitness function with test dataset
+		best_accuracy = final_best_individual.getAccuracy()
 		best_error = 1-best_accuracy
 
 		print '----------------------------------------------------------------'

@@ -18,12 +18,19 @@ class GD1BinaryStringSet(GenomeBase):
 		self.initializator.set(GD1BinaryStringSetInitializator)
 		self.mutator.set(WG1DBinaryStringSetMutatorFlip)
 		self.crossover.set(G1DBinaryStringSetXTwoPoint)
+		self.accuracy = 0.0
 
 	def __len__(self):
 		return self.ruleSetSize
 
 	def __getitem__(self, key):
 		return self.ruleSet[key]
+
+	def getAccuracy(self):
+		return self.accuracy
+
+	def setAccuracy(self,accuracy):
+		self.accuracy = accuracy
 
 	def setExamplesRef(self,examples):
 		self.examples = examples
@@ -297,8 +304,10 @@ def rule_eval2(genome):
 	for example in examples:
 		corrects += match_example(example,rule_list, attribute_bits)
 
+	accuracy = corrects/float(len(examples))
+	genome.setAccuracy(accuracy)
 	#the final score is the classification accuracy to the power of 2
-	score = (float(corrects)/float(len(examples)))**2
+	score = (accuracy)**2
 	#applying ruleLength penalization. if not specified, decay is 1 and penalization is nonexistent
 	decay = genome.getParam("decay")
 	new_score = score*(decay**(len(rule_list) -1))
