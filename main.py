@@ -130,7 +130,8 @@ def evolve_callback(ga_engine):
    return False
 
 def population_init(genome,**args):
-	MAX_NUMBER_OF_RULES = 5 # genome will have 1 <= i <= MAX rules within the rule set
+	# genome will have 1 <= i <= MAX rules within the rule set
+	MAX_NUMBER_OF_RULES = genome.getParam("initrules")
 	genomeExamples = genome.getExamplesRef()
 
 	number_of_rules_to_add = rand_randint(1,MAX_NUMBER_OF_RULES)
@@ -260,6 +261,9 @@ def train_gabil(crossoverRate,mutationRate,populationSize,generations,dataset_fi
 		# Genome instance
 		genome = BinaryStringSet.GD1BinaryStringSet(rule_length)
 		genome.setExamplesRef(training_dataset)
+
+		genome.setParams(initrules=initrules)
+		genome.setParams(decay=decay)
 
 		# The evaluator function (fitness function)
 		genome.evaluator.set(BinaryStringSet.rule_eval2)

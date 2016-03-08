@@ -297,7 +297,9 @@ def rule_eval2(genome):
 
 	#the final score is the classification accuracy to the power of 2
 	score = (float(corrects)/float(len(examples)))**2
-	new_score = score*(0.99**(len(rule_list) -1))
+	#applying ruleLength penalization. if not specified, decay is 1 and penalization is nonexistent
+	decay = genome.getParam("decay")
+	new_score = score*(decay**(len(rule_list) -1))
 	#print 'correct: %.2f | total: %.2f | size: %.2f | score: %.2f/%.2f' % (corrects, len(examples), len(rule_list), score, new_score)
 	return new_score
 
