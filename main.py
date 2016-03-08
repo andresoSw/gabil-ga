@@ -63,6 +63,7 @@ def extract_commandline_params(argv):
                         '--dataset <datasetfile>\n'
 
    mandatory_args = [("-c","--crossover"),("-m","--mutation"),("-g","--generations"),("-p","--population"),("-d","dataset")]
+   optional_args = [("--decay"),("--initrules")]
 
    # checking that all mandatory arguments were provide within the command line
    for shortArg,longArg in mandatory_args:
@@ -72,7 +73,7 @@ def extract_commandline_params(argv):
          sys.exit(2)
   
    try:
-      opts, args = getopt.getopt(argv,'c:m:g:p:d:',['crossover=','mutation=','generations=','population=','dataset='])
+      opts, args = getopt.getopt(argv,'c:m:g:p:d:',['crossover=','mutation=','generations=','population=','dataset=','decay=','initrules='])
    except getopt.GetoptError:
       print how_to_use_message
       sys.exit(2)
@@ -90,6 +91,10 @@ def extract_commandline_params(argv):
          parsed_arguments["population"] = int(arg)
       elif opt in ("-d","--dataset"):
          parsed_arguments["dataset"] = arg
+      elif opt == "--decay":
+         parsed_arguments["decay"] = float(arg)
+      elif opt == "--initrules":
+         parsed_arguments["initrules"] = int(arg)
 
    return parsed_arguments
 
@@ -132,7 +137,7 @@ def population_init(genome,**args):
 	for i in range(0,number_of_rules_to_add):
 		genome.addRuleAsString(genomeExamples[rand_randint(0,len(genomeExamples)-1)])
 
-def train_gabil(crossoverRate,mutationRate,populationSize,generations,dataset_file):
+def train_gabil(crossoverRate,mutationRate,populationSize,generations,dataset_file,decay,initrules):
 	print '----------------------------------------------------------------'
 	print '***** Running GABIL with parameters:\n'
 	print '* crossoverRate  : %s' %(crossoverRate)
@@ -160,8 +165,15 @@ def train_gabil(crossoverRate,mutationRate,populationSize,generations,dataset_fi
 	print '**** Dumping results in directory: \"%s\"' %(results_path)
 	print '----------------------------------------------------------------'
 	input_params_file = os.path.join(results_path,'input_params.txt')
-	input_params = {"crossoverRate":crossoverRate,"mutationRate":mutationRate,"populationSize":populationSize,
-					"generations":generations,"dataset_file":dataset_file}
+	input_params = {
+		"crossoverRate":crossoverRate,
+		"mutationRate":mutationRate,
+		"populationSize":populationSize,
+		"generations":generations,
+		"dataset_file":dataset_file,
+		"decay":decay,
+		"initrules":initrules
+	}
 	with open(input_params_file, 'w') as outfile:
 			json.dump(input_params, outfile,indent=4)
 
@@ -300,10 +312,25 @@ if __name__ == '__main__':
 
 	#ignoring the name of the program from the command line args
 	arguments = extract_commandline_params(sys.argv[1:]) 
+
+	#mandatory args
 	crossoverRate = arguments["crossover"]
 	mutationRate = arguments["mutation"]
 	populationSize = arguments["population"]
 	generations = arguments["generations"]
 	dataset_file = arguments["dataset"]
+
+	#optional args
+	DEFAULT_DECAY = 1 #default rulesize penalization is 1
+	DEFAULT_INITRULES = 5 #default max number of rules in initialization is 5
+	if "decay" in arguments:
+		decay = arguments["decay"]
+	else:
+		decay = DEFAULT_DECAY
+
+	if "initrules" in arguments:
+		initrules = arguments["initrules"]
+	else:
+		initrules = DEFAULT_INITRULES
 	train_gabil(crossoverRate=crossoverRate,mutationRate=mutationRate,
-						populationSize=populationSize,generations=generations,dataset_file=dataset_file)
+						populationSize=populationSize,generations=generations,dataset_file=dataset_file,decay=decay,initrules=initrules)
