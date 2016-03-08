@@ -7,9 +7,53 @@ from pyevolve import Selectors
 from pyevolve import Mutators
 import pyevolve as pyevolve
 import BinarystringSet as BinaryStringSet
-from random import randint as rand_randint
+from random import randint as rand_randint,shuffle
 import sys, getopt
+import os
 import time 
+import math
+import json
+
+def separate_dataset(examples):
+	training_dataset = []
+	test_dataset = []
+
+	#filtering examples where the last bit - the classification bit - is 1
+	positives = [example for example in examples if example[-1]=='1']
+
+	#filtering examples where the last bit- the classification bit- is 0
+	negatives = [example for example in examples if example[-1]=='0']
+
+	training_dataset_ratio = 0.7
+	test_dataset_ratio = 1 - training_dataset_ratio
+
+	training_positives = int(math.floor(training_dataset_ratio*len(positives)))
+	training_negatives = int(math.floor(training_dataset_ratio*len(negatives)))
+	test_positives = len(positives) - training_positives
+	test_negatives = len(negatives) - training_negatives
+
+	for npositive in xrange(0,training_positives):
+		training_positive = positives.pop(rand_randint(0,len(positives)-1))
+		training_dataset.append(training_positive)
+
+	for nnegativee in xrange(0,training_negatives):
+		training_negative = negatives.pop(rand_randint(0,len(negatives)-1))
+		training_dataset.append(training_negative)
+
+	for npositive in xrange(0,test_positives):
+		test_positive = positives.pop(rand_randint(0,len(positives)-1))
+		test_dataset.append(test_positive)
+
+	for nnegativee in xrange(0,test_negatives):
+		test_negative = negatives.pop(rand_randint(0,len(negatives)-1))
+		test_dataset.append(test_negative)
+
+	#checks that all positives and negatives were distributed within the two datasets
+	assert ((positives==[]) and (negatives==[])), 'Error while separating dataset: positives or negatives were not well distributed'
+
+	shuffle(training_dataset)
+	shuffle(test_dataset)
+	return training_dataset,test_dataset
 
 def extract_commandline_params(argv):
    how_to_use_message = '$ Usage: \n\tShort Version: python test.py -c <rate> ' \
@@ -77,7 +121,7 @@ def evolve_callback(ga_engine):
    generation = ga_engine.getCurrentGeneration()
    best_individual = ga_engine.bestIndividual()
    # generacion, bestgenome.numberofrules, fitness, %classification
-   print "%s,%s,%s,%s" %(generation,len(best_individual.rulePartition),best_individual.fitness,accuracy(best_individual))
+   print "%s,%s,%s,%s" %(generation,len(best_individual.rulePartition),best_individual.getRawScore(),accuracy(best_individual))
    return False
 
 def population_init(genome,**args):
@@ -97,7 +141,24 @@ def train_gabil(crossoverRate,mutationRate,populationSize,generations,dataset_fi
 	print '* generations    : %s' %(generations)
 	print '* dataset_file   : %s' %(dataset_file)
 	print '----------------------------------------------------------------'
+	"""
+		Computing results folder
+	"""
+	found = False
+	dir_index = 0
+	dir_prefix = os.path.join('gabil-runs','run_')
+	while not found:
+		results_path = dir_prefix+str(dir_index)
+		found =  not os.path.isdir(results_path)
+		dir_index += 1
+	try: 
+	    os.makedirs(results_path)
+	except OSError:
+	    if not os.path.isdir(results_path):
+	        raise
 
+	print '**** Dumping results in directory: \"%s\"' %(results_path)
+	print '----------------------------------------------------------------'
 
 	"""
 		Initializing attributes bitstrings
@@ -161,13 +222,27 @@ def train_gabil(crossoverRate,mutationRate,populationSize,generations,dataset_fi
 			examples.append(rule)
 
 		"""
+			Separating the examples in training and test datasets
+		"""
+		training_dataset,test_dataset = separate_dataset(examples)
+		print 'Training dataset size: %s' %(len(training_dataset))
+		print 'Test dataset size: %s' %(len(test_dataset))
+		print '----------------------------------------------------------------'
+		training_dataset_file = os.path.join(results_path,'training_dataset.txt')
+		with open(training_dataset_file, 'w') as outfile:
+			json.dump(training_dataset, outfile)
+		test_dataset_file = os.path.join(results_path,'test_dataset.txt')
+		with open(test_dataset_file, 'w') as outfile:
+			json.dump(test_dataset, outfile)
+
+		"""
 			Evolutionary Algorithm using pyevolve
 		"""
-		rule_length = len(examples[0])
+		rule_length = len(training_dataset[0])
 
 		# Genome instance
 		genome = BinaryStringSet.GD1BinaryStringSet(rule_length)
-		genome.setExamplesRef(examples)
+		genome.setExamplesRef(training_dataset)
 
 		# The evaluator function (fitness function)
 		genome.evaluator.set(BinaryStringSet.rule_eval2)
