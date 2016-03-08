@@ -56,11 +56,13 @@ def separate_dataset(examples):
 	return training_dataset,test_dataset
 
 def extract_commandline_params(argv):
-   how_to_use_message = '$ Usage: \n\tShort Version: main.py -c <rate> ' \
+   how_to_use_message = '$ Usage: \n\tShort ARGS: main.py -c <rate> ' \
                         '-m <rate> -g <howmany> -p <howmany> -d <datasetfile>\n'\
-                        '\tLong Version : main.py --crossover <rate>' \
+                        '\tLong  ARGS: main.py --crossover <rate> ' \
                         '--mutation <rate> --generations <howmany> --population <howmany> '\
-                        '--dataset <datasetfile>\n'
+                        '--dataset <datasetfile>\n\n'\
+                        '\t[OPTIONAL ARGS] --decay <ratio> --initrules <howmany> --maxrules<howmany>\n\n'\
+                        '$ Please refer to the README.txt for further explanation\n'
 
    mandatory_args = [("-c","--crossover"),("-m","--mutation"),("-g","--generations"),("-p","--population"),("-d","dataset")]
    optional_args = [("--decay"),("--initrules"),("--maxrules")]
