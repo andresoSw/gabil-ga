@@ -130,7 +130,7 @@ def evolve_callback(ga_engine):
    generation = ga_engine.getCurrentGeneration()
    best_individual = ga_engine.bestIndividual()
    # generacion, bestgenome.numberofrules, fitness, %classification
-   print "%s,%s,%s,%s" %(generation,len(best_individual.rulePartition),best_individual.getRawScore(),accuracy(best_individual))
+  # print "%s,%s,%s,%s" %(generation,len(best_individual.rulePartition),best_individual.getRawScore(),accuracy(best_individual))
    return False
 
 def population_init(genome,**args):
@@ -288,7 +288,7 @@ def train_gabil(crossoverRate,mutationRate,populationSize,generations,dataset_fi
 		# to be executed at each generation
 		ga.stepCallback.set(evolve_callback)
 
-		ga.evolve() # Do the evolution
+		ga.evolve(freq_stats=1) # Do the evolution
 
 		final_best_individual = ga.bestIndividual()
 
@@ -299,6 +299,18 @@ def train_gabil(crossoverRate,mutationRate,populationSize,generations,dataset_fi
 		final_best_individual.setExamplesRef(test_dataset)
 		best_accuracy = accuracy(final_best_individual)
 		best_error = 1-best_accuracy
+
+		print '----------------------------------------------------------------'
+		print '**** Best hyphotesis found:'
+		print '----------------------------------------------------------------'
+		print '* Total size: %s' %(final_best_individual.ruleSetSize)
+		print '* Number of rules: %s' %len(final_best_individual.rulePartition)
+		print '* Fitness (Raw): %s' %(final_best_individual.getRawScore())
+		print '* Test Dataset Accuracy: %s' %(best_accuracy)
+		print '* Test Dataset Error %s' %(best_error)
+		print '----------------------------------------------------------------'
+		print 'Dumping Hypothesis results in \"hypothesis_out.txt\" file '
+		print '----------------------------------------------------------------'
 
 		"""
 			Dumping results in out file
@@ -314,9 +326,6 @@ def train_gabil(crossoverRate,mutationRate,populationSize,generations,dataset_fi
 		}
 		with open(hypothesis_out_file, 'w') as outfile:
 				json.dump(hypothesis_out, outfile,indent=4,sort_keys=False)
-
-		# Best individual
-		print 'Best individual:',ga.bestIndividual()
 
 if __name__ == '__main__':
 
