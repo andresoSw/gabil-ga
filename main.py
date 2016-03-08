@@ -254,11 +254,9 @@ def train_gabil(crossoverRate,mutationRate,populationSize,generations,dataset_fi
 		genome.initializator.set(population_init)
 		genome.mutator.set(BinaryStringSet.WG1DBinaryStringSetMutatorFlip)
 		genome.crossover.set(BinaryStringSet.G1DBinaryStringSetXTwoPoint)
-		# Genetic Algorithm Instance
-		ga = GSimpleGA.GSimpleGA(genome)
 
-		# Set the Roulette Wheel selector method, the number of generations and
-		# the termination criteria
+		ga = GSimpleGA.GSimpleGA(genome) # Genetic Algorithm Instance
+
 		ga.selector.set(Selectors.GRouletteWheel)
 		ga.setCrossoverRate(crossoverRate)
 		ga.setGenerations(generations)
@@ -268,10 +266,17 @@ def train_gabil(crossoverRate,mutationRate,populationSize,generations,dataset_fi
 		# to be executed at each generation
 		ga.stepCallback.set(evolve_callback)
 
-		# Do the evolution
-		ga.evolve()
+		ga.evolve() # Do the evolution
 
 		final_best_individual = ga.bestIndividual()
+
+		"""
+			Computing accuracy/error of best individual with 
+			respect of the test dataset
+		"""
+		final_best_individual.setExamplesRef(test_dataset)
+		best_accuracy = accuracy(final_best_individual)
+		best_error = 1-best_accuracy
 
 		"""
 			Dumping results in out file
@@ -282,10 +287,11 @@ def train_gabil(crossoverRate,mutationRate,populationSize,generations,dataset_fi
 			"size":final_best_individual.ruleSetSize,
 			"numberOfRules":len(final_best_individual.rulePartition),
 			"fitness":final_best_individual.getRawScore(),
-			"accuracy":accuracy(final_best_individual)
+			"accuracy":best_accuracy, #w test dataset
+			"error":best_error #w test dataset
 		}
 		with open(hypothesis_out_file, 'w') as outfile:
-				json.dump(hypothesis_out, outfile,indent=4)
+				json.dump(hypothesis_out, outfile,indent=4,sort_keys=False)
 
 		# Best individual
 		print 'Best individual:',ga.bestIndividual()
