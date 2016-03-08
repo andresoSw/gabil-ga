@@ -271,6 +271,22 @@ def train_gabil(crossoverRate,mutationRate,populationSize,generations,dataset_fi
 		# Do the evolution
 		ga.evolve()
 
+		final_best_individual = ga.bestIndividual()
+
+		"""
+			Dumping results in out file
+		"""
+		hypothesis_out_file = os.path.join(results_path,'hypothesis_out.txt')
+		hypothesis_out = {
+			"hyphotesis":final_best_individual.getBinary(),
+			"size":final_best_individual.ruleSetSize,
+			"numberOfRules":len(final_best_individual.rulePartition),
+			"fitness":final_best_individual.getRawScore(),
+			"accuracy":accuracy(final_best_individual)
+		}
+		with open(hypothesis_out_file, 'w') as outfile:
+				json.dump(hypothesis_out, outfile,indent=4)
+
 		# Best individual
 		print 'Best individual:',ga.bestIndividual()
 
