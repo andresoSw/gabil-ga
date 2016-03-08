@@ -61,11 +61,11 @@ def extract_commandline_params(argv):
                         '\tLong  ARGS: main.py --crossover <rate> ' \
                         '--mutation <rate> --generations <howmany> --population <howmany> '\
                         '--dataset <datasetfile>\n\n'\
-                        '\t[OPTIONAL ARGS] --decay <ratio> --initrules <howmany> --maxrules<howmany>\n\n'\
+                        '\t[OPTIONAL ARGS] --decay <ratio> --initrules <howmany> --maxrules <howmany> --rfolder <path>\n\n'\
                         '$ Please refer to the README.txt for further explanation\n'
 
    mandatory_args = [("-c","--crossover"),("-m","--mutation"),("-g","--generations"),("-p","--population"),("-d","dataset")]
-   optional_args = [("--decay"),("--initrules"),("--maxrules")]
+   optional_args = [("--decay"),("--initrules"),("--maxrules"),("--rfolder")]
 
    # checking that all mandatory arguments were provide within the command line
    for shortArg,longArg in mandatory_args:
@@ -75,7 +75,8 @@ def extract_commandline_params(argv):
          sys.exit(2)
   
    try:
-      opts, args = getopt.getopt(argv,'c:m:g:p:d:',['crossover=','mutation=','generations=','population=','dataset=','decay=','initrules=','maxrules='])
+      opts, args = getopt.getopt(argv,'c:m:g:p:d:',['crossover=','mutation=','generations=','population=',
+      												'dataset=','decay=','initrules=','maxrules=','rfolder='])
    except getopt.GetoptError:
       print how_to_use_message
       sys.exit(2)
@@ -99,6 +100,8 @@ def extract_commandline_params(argv):
          parsed_arguments["initrules"] = int(arg)
       elif opt == "--maxrules":
       	parsed_arguments["maxrules"] = int(arg)
+      elif opt == "--rfolder":
+      	parsed_arguments["rfolder"] = arg
 
    return parsed_arguments
 
@@ -153,7 +156,8 @@ def getAvgAccuracy(ga_engine):
 	avgAccuracy = sum([individual.getAccuracy() for individual in ga_engine.internalPop ])/float(len(ga_engine.internalPop))
 	return avgAccuracy
 
-def train_gabil(crossoverRate,mutationRate,populationSize,generations,dataset_file,decay,initrules,maxrules):
+def train_gabil(crossoverRate,mutationRate,populationSize,generations,dataset_file,decay,
+				initrules,maxrules,results_folder):
 	print '----------------------------------------------------------------'
 	print '***** Running GABIL with parameters:\n'
 	print '* crossoverRate  : %s' %(crossoverRate)
@@ -167,7 +171,7 @@ def train_gabil(crossoverRate,mutationRate,populationSize,generations,dataset_fi
 	"""
 	found = False
 	dir_index = 0
-	dir_prefix = os.path.join('gabil-runs','run_')
+	dir_prefix = os.path.join(results_folder,'run_')
 	while not found:
 		results_path = dir_prefix+str(dir_index)
 		found =  not os.path.isdir(results_path)
@@ -365,6 +369,7 @@ if __name__ == '__main__':
 	DEFAULT_DECAY = 1 #default rulesize penalization is 1
 	DEFAULT_INITRULES = 5 #default max number of rules in initialization is 5
 	DEFAULT_MAXRULES = 50 #default max number of rules in an individual
+	DEFAULT_RESULTS_FOLDER = 'gabil-runs' #default name of folder where to place the result files
 	if "decay" in arguments:
 		decay = arguments["decay"]
 	else:
@@ -380,7 +385,12 @@ if __name__ == '__main__':
 	else:
 		maxrules = DEFAULT_MAXRULES
 
+	if "rfolder" in arguments:
+		results_folder = arguments["rfolder"]
+	else:
+		results_folder = DEFAULT_RESULTS_FOLDER 
+
 	train_gabil(crossoverRate=crossoverRate,mutationRate=mutationRate,
 				populationSize=populationSize,generations=generations,
 				dataset_file=dataset_file,decay=decay,initrules=initrules,
-				maxrules=maxrules)
+				maxrules=maxrules,results_folder=results_folder)
