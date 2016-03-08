@@ -1,4 +1,4 @@
-# gabil-ga
+# GABIL-GA
 Implementation of Genetic Algorithm (GABIL) for classification
 
 #### Installation
@@ -13,11 +13,6 @@ Execute gabil project by running the following command
 ```bash
 $ python main.py <MANDATORY ARGS> <OPTIONAL ARGS>
 ```
-First Header  | Second Header
-------------- | -------------
-Content Cell  | Content Cell Line 1
-              | Content Cell Line 2
-Content Cell  | Content Cell
 
 Below there is a list of the mandatory and optional arguments to be provided respectively:
 
