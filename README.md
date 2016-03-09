@@ -61,7 +61,7 @@ A description of the content of each file is summarized in the following table
 |       Filename            |             Content Description                           |        Format          |
 |---------------------------|-----------------------------------------------------------|------------------------|
 | gabil-learning.txt        | The progress of the learning process, for each generation | comma separated values |
-| hypothesis_out.txt        | The best hypothesis found and its statistics. Accuracy and Error are computed with respect of the test dataset  | json        |
+| hypothesis_out.txt        | The best hypothesis found and its statistics. Accuracy and Error are computed with respect of both training and test dataset  | json        |
 | input_params.txt          | A summary of the input parameters provided by the user                      | json  |
 | training_dataset.txt      | The dataset selected for training. Corresponds to 70% of the given dataset  | json  |
 | test_dataset.txt          | The dataset selected for testing. Corresponds to 30% of the given dataset   | json  |
