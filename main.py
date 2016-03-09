@@ -61,11 +61,12 @@ def extract_commandline_params(argv):
                         '\tLong  ARGS: main.py --crossover <rate> ' \
                         '--mutation <rate> --generations <howmany> --population <howmany> '\
                         '--dataset <datasetfile>\n\n'\
-                        '\t[OPTIONAL ARGS] --decay <ratio> --initrules <howmany> --maxrules <howmany> --rfolder <path>\n\n'\
+                        '\t[OPTIONAL ARGS] --decay <ratio> --initrules <howmany> --maxrules <howmany> --rfolder <path> '\
+                        '--elitism <true,false> --pselection <roulette,rank,tournament>\n\n'\
                         '$ Please refer to the README.md for further explanation\n'
 
    mandatory_args = [("-c","--crossover"),("-m","--mutation"),("-g","--generations"),("-p","--population"),("-d","dataset")]
-   optional_args = [("--decay"),("--initrules"),("--maxrules"),("--rfolder")]
+   optional_args = [("--decay"),("--initrules"),("--maxrules"),("--elitism"),("--pselection"),("--rfolder")]
 
    # checking that all mandatory arguments were provide within the command line
    for shortArg,longArg in mandatory_args:
@@ -76,7 +77,8 @@ def extract_commandline_params(argv):
   
    try:
       opts, args = getopt.getopt(argv,'c:m:g:p:d:',['crossover=','mutation=','generations=','population=',
-      												'dataset=','decay=','initrules=','maxrules=','rfolder='])
+      												'dataset=','decay=','initrules=','maxrules=','rfolder=',
+      												'elitism=','pselection='])
    except getopt.GetoptError:
       print how_to_use_message
       sys.exit(2)
@@ -102,6 +104,16 @@ def extract_commandline_params(argv):
       	parsed_arguments["maxrules"] = int(arg)
       elif opt == "--rfolder":
       	parsed_arguments["rfolder"] = arg
+      elif opt == "--elitism":
+      	parsed_arguments["elitism"] = bool(arg)
+      elif opt == "--pselection":
+      	if not arg in ("roulette","rank","tournament"):
+      		print '* Warning: Invalid argument for parent selection \"%s\", expected \"roulette\", \"rank\" or \"tournament\"\nRoulette will be used by default' %(arg)
+      		parsed_arguments["selector"] = Selectors.GRouletteWheel
+      	else:
+      		if arg == "roulette": parsed_arguments["selector"] = Selectors.GRouletteWheel
+      		elif arg == "rank": parsed_arguments["selector"] = Selectors.GRankSelector
+      		elif arg == "tournament": parsed_arguments["selector"] = Selectors.GTournamentSelector
 
    return parsed_arguments
 
@@ -144,6 +156,10 @@ def getWorstIndividual(ga_engine):
 	worstIndividual = min(ga_engine.internalPop,key=lambda g: g.getRawScore)
 	return worstIndividual
 
+def getBestIndividualRawScore(ga_engine):
+	bestIndividual = max(ga_engine.internalPop,key=lambda g: g.getRawScore)
+	return bestIndividual
+
 def getAvgRawScore(ga_engine):
 	avgScore = sum([individual.getRawScore() for individual in ga_engine.internalPop ])/float(len(ga_engine.internalPop))
 	return avgScore
@@ -157,13 +173,15 @@ def getAvgAccuracy(ga_engine):
 	return avgAccuracy
 
 def train_gabil(crossoverRate,mutationRate,populationSize,generations,dataset_file,decay,
-				initrules,maxrules,results_folder):
+				initrules,maxrules,results_folder,elitism,selector):
 	print '----------------------------------------------------------------'
 	print '***** Running GABIL with parameters:\n'
 	print '* crossoverRate  : %s' %(crossoverRate)
 	print '* mutationRate   : %s' %(mutationRate)
 	print '* populationSize : %s' %(populationSize)
 	print '* generations    : %s' %(generations)
+	print '* elitism        : %s' %(elitism)
+	print '* selector       : %s' %(selector.__name__) 
 	print '* dataset_file   : %s' %(dataset_file)
 	print '----------------------------------------------------------------'
 	"""
@@ -193,7 +211,9 @@ def train_gabil(crossoverRate,mutationRate,populationSize,generations,dataset_fi
 		"dataset_file":dataset_file,
 		"decay":decay,
 		"initrules":initrules,
-		"maxrules":maxrules
+		"maxrules":maxrules,
+		"elitism":elitism,
+		"selector":selector.__name__
 	}
 	with open(input_params_file, 'w') as outfile:
 			json.dump(input_params, outfile,indent=4)
@@ -294,11 +314,12 @@ def train_gabil(crossoverRate,mutationRate,populationSize,generations,dataset_fi
 
 		ga = GSimpleGA.GSimpleGA(genome) # Genetic Algorithm Instance
 
-		ga.selector.set(Selectors.GRouletteWheel)
+		ga.selector.set(selector)
 		ga.setCrossoverRate(crossoverRate)
 		ga.setGenerations(generations)
 		ga.setMutationRate(mutationRate)
 		ga.setPopulationSize(populationSize)
+		ga.setElitism(elitism)
 
 		#file where to register learning progress
 		learning_results_file = os.path.join(results_path,'gabil-learning.txt')
@@ -315,23 +336,28 @@ def train_gabil(crossoverRate,mutationRate,populationSize,generations,dataset_fi
 
 		ga.evolve(freq_stats=1) # Do the evolution
 
-		final_best_individual = ga.bestIndividual()
+		final_best_individual = getBestIndividualRawScore(ga)
+		training_accuracy = final_best_individual.getAccuracy()
+		training_error = 1-training_accuracy
 
 		"""
 			Computing accuracy/error of best individual with 
 			respect of the test dataset
 		"""
 		final_best_individual.setExamplesRef(test_dataset)
-		BinaryStringSet.rule_eval2(final_best_individual) #applying fitness function with test dataset
+		#applying fitness function with test dataset, updates accuracy 
+		BinaryStringSet.rule_eval2(final_best_individual) 
 		best_accuracy = final_best_individual.getAccuracy()
 		best_error = 1-best_accuracy
 
 		print '----------------------------------------------------------------'
-		print '**** Best hyphotesis found:'
+		print '**** Best Hypothesis found:'
 		print '----------------------------------------------------------------'
 		print '* Total size: %s' %(final_best_individual.ruleSetSize)
 		print '* Number of rules: %s' %len(final_best_individual.rulePartition)
 		print '* Fitness (Raw): %s' %(final_best_individual.getRawScore())
+		print '* Training Dataset Accuracy: %s' %(training_accuracy)
+		print '* Training Dataset Error: %s' %(training_error)
 		print '* Test Dataset Accuracy: %s' %(best_accuracy)
 		print '* Test Dataset Error %s' %(best_error)
 		print '----------------------------------------------------------------'
@@ -347,8 +373,10 @@ def train_gabil(crossoverRate,mutationRate,populationSize,generations,dataset_fi
 			"size":final_best_individual.ruleSetSize,
 			"numberOfRules":len(final_best_individual.rulePartition),
 			"fitness":final_best_individual.getRawScore(),
-			"accuracy":best_accuracy, #w test dataset
-			"error":best_error #w test dataset
+			"training_accuracy":training_accuracy, #w training dataset
+			"training_error":training_error, #w training dataset
+			"test_accuracy":best_accuracy, #w test dataset
+			"test_error":best_error #w test dataset
 		}
 		with open(hypothesis_out_file, 'w') as outfile:
 				json.dump(hypothesis_out, outfile,indent=4,sort_keys=False)
@@ -370,6 +398,8 @@ if __name__ == '__main__':
 	DEFAULT_INITRULES = 5 #default max number of rules in initialization is 5
 	DEFAULT_MAXRULES = 50 #default max number of rules in an individual
 	DEFAULT_RESULTS_FOLDER = 'gabil-runs' #default name of folder where to place the result files
+	DEFAULT_ELITISM = False #default selection of survivos doesnt take elitism into account
+	DEFAULT_PARENT_SELECTOR = Selectors.GRouletteWheel 
 	if "decay" in arguments:
 		decay = arguments["decay"]
 	else:
@@ -390,7 +420,17 @@ if __name__ == '__main__':
 	else:
 		results_folder = DEFAULT_RESULTS_FOLDER 
 
+	if "elitism" in arguments:
+		elitism = arguments["elitism"]
+	else:
+		elitism = DEFAULT_ELITISM
+
+	if "selector" in arguments:
+		selector = arguments["selector"]
+	else:
+		selector = DEFAULT_PARENT_SELECTOR
 	train_gabil(crossoverRate=crossoverRate,mutationRate=mutationRate,
 				populationSize=populationSize,generations=generations,
 				dataset_file=dataset_file,decay=decay,initrules=initrules,
-				maxrules=maxrules,results_folder=results_folder)
+				maxrules=maxrules,results_folder=results_folder,elitism=elitism,
+				selector=selector)
