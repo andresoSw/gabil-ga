@@ -20,20 +20,22 @@ Below there is a list of the mandatory and optional arguments to be provided res
 
 | Argument                        |Short Version        | Long Version             | Expected Value      |
 |---------------------------------|---------------------|--------------------------|---------------------|
-| Crossover Rate:                 |     -c              |    --crossover           |  float number       |
-| Mutation Rate:                  |     -m              |   --mutation             | float number        |
-| Number of Generations:          |     -g              |  --generations           | int number          |
-| Population Size:                |     -p              |   --population           | int number          |
-| Dataset file Path:              |     -d              |    --dataset             | path to dataset file|
+| Crossover Rate                  |     -c              |    --crossover           |float number         |
+| Mutation Rate                   |     -m              |   --mutation             | float number        |
+| Number of Generations           |     -g              |  --generations           | int number          |
+| Population Size                 |     -p              |   --population           | int number          |
+| Dataset file Path               |     -d              |    --dataset             | path to dataset file|
 
 * Optional Arguments
 
-| Argument                                 | Specification        |Expected Value        |Default Value   |
-|------------------------------------------|--------------------- |----------------------|----------------|
-| Length Penalization (Decay):             |--decay               | int number           |   1            |
-| Max Rules at Initialization:             |--initrules           | int number           |   5            |
-| Max number of Rules on each individual:  |--maxrules            | int number           |   50           |
-| Results Folder:                          |--rfolder             | path to folder       |  /gabil-runs   |
+| Argument                                 | Specification        |Expected Value        |Default Value         |
+|------------------------------------------|--------------------- |----------------------|----------------------|
+| Length Penalization (Decay)              |--decay               | float number         |   1                  |
+| Max Rules at Initialization              |--initrules           | int number           |   5                  |
+| Max number of Rules on each individual   |--maxrules            | int number           |   50                 |
+| Elitism                                  |--elitism             | true or false        |   False              |
+| Parent Selection                         |--pselection          | roulette or rank or tournament  | roulette  |
+| Results Folder                           |--rfolder             | path to folder       |  /gabil-runs         |
 
 
 In case that any of the optional argument is not specified, its default value will be used instead
