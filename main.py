@@ -105,7 +105,7 @@ def extract_commandline_params(argv):
       elif opt == "--rfolder":
       	parsed_arguments["rfolder"] = arg
       elif opt == "--elitism":
-      	parsed_arguments["elitism"] = bool(arg)
+      	parsed_arguments["elitism"] = float(arg)
       elif opt == "--pselection":
       	if not arg in ("roulette","rank","tournament"):
       		print '* Warning: Invalid argument for parent selection \"%s\", expected \"roulette\", \"rank\" or \"tournament\"\nRoulette will be used by default' %(arg)
@@ -169,14 +169,14 @@ def getAvgAccuracy(ga_engine):
 	return avgAccuracy
 
 def train_gabil(crossoverRate,mutationRate,populationSize,generations,dataset_file,decay,
-				initrules,maxrules,results_folder,elitism,selector):
+				initrules,maxrules,results_folder,selector,eli_replacement):
 	print '----------------------------------------------------------------'
 	print '***** Running GABIL with parameters:\n'
 	print '* crossoverRate  : %s' %(crossoverRate)
 	print '* mutationRate   : %s' %(mutationRate)
 	print '* populationSize : %s' %(populationSize)
 	print '* generations    : %s' %(generations)
-	print '* elitism        : %s' %(elitism)
+	print '* elitism        : %s' %(eli_replacement)
 	print '* selector       : %s' %(selector.__name__) 
 	print '* dataset_file   : %s' %(dataset_file)
 	print '----------------------------------------------------------------'
@@ -208,7 +208,7 @@ def train_gabil(crossoverRate,mutationRate,populationSize,generations,dataset_fi
 		"decay":decay,
 		"initrules":initrules,
 		"maxrules":maxrules,
-		"elitism":elitism,
+		"elitismRate":float(eli_replacement/populationSize),
 		"selector":selector.__name__
 	}
 	with open(input_params_file, 'w') as outfile:
@@ -315,7 +315,7 @@ def train_gabil(crossoverRate,mutationRate,populationSize,generations,dataset_fi
 		ga.setGenerations(generations)
 		ga.setMutationRate(mutationRate)
 		ga.setPopulationSize(populationSize)
-		#ga.setElitism(elitism)
+		ga.setElitismReplacement(eli_replacement)
 
 		#file where to register learning progress
 		learning_results_file = os.path.join(results_path,'gabil-learning.txt')
@@ -394,7 +394,7 @@ if __name__ == '__main__':
 	DEFAULT_INITRULES = 5 #default max number of rules in initialization is 5
 	DEFAULT_MAXRULES = 50 #default max number of rules in an individual
 	DEFAULT_RESULTS_FOLDER = 'gabil-runs' #default name of folder where to place the result files
-	DEFAULT_ELITISM = False #default selection of survivos doesnt take elitism into account
+	DEFAULT_ELITISM_REPLACEMENT = 1 #default selection of survivos doesnt take elitism into account
 	DEFAULT_PARENT_SELECTOR = Selectors.GRouletteWheel 
 	if "decay" in arguments:
 		decay = arguments["decay"]
@@ -417,16 +417,18 @@ if __name__ == '__main__':
 		results_folder = DEFAULT_RESULTS_FOLDER 
 
 	if "elitism" in arguments:
-		elitism = arguments["elitism"]
+		eli_replacement = int(math.floor(arguments["elitism"]*populationSize))
 	else:
-		elitism = DEFAULT_ELITISM
+		eli_replacement = DEFAULT_ELITISM_REPLACEMENT
 
 	if "selector" in arguments:
 		selector = arguments["selector"]
 	else:
 		selector = DEFAULT_PARENT_SELECTOR
+
+
 	train_gabil(crossoverRate=crossoverRate,mutationRate=mutationRate,
 				populationSize=populationSize,generations=generations,
 				dataset_file=dataset_file,decay=decay,initrules=initrules,
-				maxrules=maxrules,results_folder=results_folder,elitism=elitism,
-				selector=selector)
+				maxrules=maxrules,results_folder=results_folder,
+				selector=selector,eli_replacement=eli_replacement)
