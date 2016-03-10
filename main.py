@@ -65,7 +65,7 @@ def extract_commandline_params(argv):
                         '--elitism <true,false> --pselection <roulette,rank,tournament>\n\n'\
                         '$ Please refer to the README.md for further explanation\n'
 
-   mandatory_args = [("-c","--crossover"),("-m","--mutation"),("-g","--generations"),("-p","--population"),("-d","dataset")]
+   mandatory_args = [("-c","--crossover"),("-m","--mutation"),("-g","--generations"),("-p","--population"),("-d","--dataset")]
    optional_args = [("--decay"),("--initrules"),("--maxrules"),("--elitism"),("--pselection"),("--rfolder")]
 
    # checking that all mandatory arguments were provide within the command line
