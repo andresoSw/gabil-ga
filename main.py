@@ -156,10 +156,6 @@ def getWorstIndividual(ga_engine):
 	worstIndividual = min(ga_engine.internalPop,key=lambda g: g.getRawScore)
 	return worstIndividual
 
-def getBestIndividualRawScore(ga_engine):
-	bestIndividual = max(ga_engine.internalPop,key=lambda g: g.getRawScore)
-	return bestIndividual
-
 def getAvgRawScore(ga_engine):
 	avgScore = sum([individual.getRawScore() for individual in ga_engine.internalPop ])/float(len(ga_engine.internalPop))
 	return avgScore
@@ -319,7 +315,7 @@ def train_gabil(crossoverRate,mutationRate,populationSize,generations,dataset_fi
 		ga.setGenerations(generations)
 		ga.setMutationRate(mutationRate)
 		ga.setPopulationSize(populationSize)
-		ga.setElitism(elitism)
+		#ga.setElitism(elitism)
 
 		#file where to register learning progress
 		learning_results_file = os.path.join(results_path,'gabil-learning.txt')
@@ -336,7 +332,7 @@ def train_gabil(crossoverRate,mutationRate,populationSize,generations,dataset_fi
 
 		ga.evolve(freq_stats=1) # Do the evolution
 
-		final_best_individual = getBestIndividualRawScore(ga)
+		final_best_individual = ga.bestIndividual()
 		training_accuracy = final_best_individual.getAccuracy()
 		training_error = 1-training_accuracy
 
