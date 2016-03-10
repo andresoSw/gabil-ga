@@ -1,6 +1,6 @@
 from os import listdir
 from os.path import isfile,join
-from gabil import  AttributeBitString,ContinuousAttributeBitString
+from AttributeBitString import  AttributeBitString,ContinuousAttributeBitString
 from pyevolve import G1DBinaryString
 from pyevolve import GSimpleGA
 from pyevolve import Selectors
