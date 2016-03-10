@@ -208,7 +208,7 @@ def train_gabil(crossoverRate,mutationRate,populationSize,generations,dataset_fi
 		"decay":decay,
 		"initrules":initrules,
 		"maxrules":maxrules,
-		"elitismRate":float(eli_replacement/populationSize),
+		"elitismRate":float(eli_replacement)/float(populationSize),
 		"selector":selector.__name__
 	}
 	with open(input_params_file, 'w') as outfile:
